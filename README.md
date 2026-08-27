@@ -20,7 +20,6 @@
   <!-- Status Badges -->
   <p>
     <img src="https://img.shields.io/badge/status-active-brightgreen?style=flat-square" alt="Status" />
-    <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License" />
     <img src="https://img.shields.io/badge/platform-web-lightgrey?style=flat-square" alt="Platform" />
   </p>
 
@@ -40,7 +39,6 @@
 - [How to Use](#️-how-to-use)
 - [Team Contributions](#-team-contributions)
 - [Future Improvements](#-future-improvements)
-- [License](#-license)
 
 ---
 
@@ -223,62 +221,6 @@ Download the training datasets and place them in the correct directories before 
 - **npm** 8 or higher
 - A **Google Gemini API key** ([Get one here](https://aistudio.google.com/app/apikey))
 
----
-
-### Step 1 — Clone the Repository
-```bash
-git clone https://github.com/FuricBond/smart-agriculture-ai-system.git
-cd smart-agriculture-ai-system
-```
-
----
-
-### Step 2 — Configure Environment Variables
-Create a `.env` file inside the `ai_api/` directory:
-```bash
-# ai_api/.env
-GEMINI_API_KEY=your_google_gemini_api_key_here
-```
-
----
-
-### Step 3 — Start the Python FastAPI ML Server
-
-> Ensure Python 3.10+ is installed. Using a virtual environment is strongly recommended.
-
-```bash
-# Create and activate virtual environment (recommended)
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-# macOS / Linux
-source venv/bin/activate
-
-# Install all Python dependencies
-pip install -r requirements.txt
-
-# Launch the FastAPI server
-cd ai_api
-uvicorn api:app --reload --port 8000
-```
-✅ The AI API will be live at **`http://localhost:8000`**  
-📖 Interactive API docs available at **`http://localhost:8000/docs`**
-
----
-
-### Step 4 — Start the React Frontend Dashboard
-```bash
-# Open a new terminal at project root
-cd frontend
-npm install
-npm start
-```
-✅ The dashboard will open automatically at **`http://localhost:3000`**
-
-
----
-
 ## 🛠️ How to Use
 
 ### 1. 🔬 Diagnose a Crop Disease
@@ -386,25 +328,6 @@ The FastAPI server provides several production-grade endpoints for prediction, c
   ```
 - **Description:** Returns historical yield records to plot trends on the frontend dashboard.
 
----
-
-## 👨‍💻 Team Contributions
-
-
-This project was developed collaboratively by a five-member team, with each member owning one complete module from data preparation through integration.
-
-| # | Role | Module | Key Responsibilities |
-|---|---|---|---|
-| 1 | **Deep Learning & Diagnostics Lead** | Disease Detection | EfficientNet CNN training, data augmentation pipeline, Grad-CAM integration, model evaluation |
-| 2 | **Predictive Soil Modeling & Feature Engineer** | Crop Recommendation | 21-feature engineering pipeline, soft-voting ensemble (RF + XGBoost + LightGBM), input validation guards |
-| 3 | **Yield Forecasting & Analytics Lead** | Yield Prediction | Historical data aggregation, XGBoost regressor, 5-fold CV, R²/MAE/RMSE reporting & visual charts |
-| 4 | **Backend Systems & API Architect** | Backend API | FastAPI server, RESTful endpoints, Node.js proxy, Gemini integration, full pipeline orchestration |
-| 5 | **Frontend Developer & UI/UX Designer** | Dashboard UI | React dashboard, Tailwind CSS, Recharts visualizations, i18n support, API integration |
-
-> Each member contributed equally to the final integrated system through parallel development of independent, interconnected modules.
-
----
-
 ## 🔮 Future Improvements
 
 - [ ] **🛰️ Satellite Data Integration** — Auto-map farm areas to pull real-time NDVI and soil moisture data
@@ -413,14 +336,6 @@ This project was developed collaboratively by a five-member team, with each memb
 - [ ] **📡 IoT Sensor Integration** — Consume live telemetry from on-farm NPK and moisture sensors
 - [ ] **🗺️ Farm Mapping** — Geospatial visualization of field health zones and yield maps
 - [ ] **🔐 User Authentication** — Farmer profile system with historical record tracking
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
 
 <div align="center">
   <p>Built with ❤️ for the future of farming.</p>
