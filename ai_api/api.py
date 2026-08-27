@@ -190,8 +190,7 @@ def startup():
         log_error(f"Failed to load Yield Trends: {e}")
 
     # ── Initialize Ensemble Engine ───────────────────────
-    # Load ResNet-50 + EfficientNet-B1 as secondary ensemble models.
-    # If this fails, the system falls back to EfficientNet-B0 only.
+    # Primary model (EfficientNet-B0) is ready; secondary models load on demand.
     if disease_status and disease_engine is not None:
         try:
             from smart_system.ensemble_engine import EnsembleEngine
@@ -200,13 +199,8 @@ def startup():
                 num_classes=len(disease_engine.class_names),
                 enable_early_exit=True,
             )
-            ok = ensemble_engine.load_secondary_models()
-            if ok:
-                _ensemble_loaded = True
-                log_info("Ensemble Engine (ResNet-50 + EfficientNet-B1) loaded [OK]")
-            else:
-                log_error("Ensemble secondary model load returned False ⚠️")
-                ensemble_engine = None
+            _ensemble_loaded = True
+            log_info("Ensemble Engine initialized [OK] (Secondary models will load on-demand)")
         except Exception as e:
             log_error(f"Ensemble Engine init failed: {e}")
             ensemble_engine = None

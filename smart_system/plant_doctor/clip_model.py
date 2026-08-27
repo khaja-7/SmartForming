@@ -5,7 +5,9 @@ from PIL import Image
 class CLIPModel:
     def __init__(self):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model, self.preprocess = clip.load("ViT-B/32", device=self.device)
+        self.model = None
+        self.preprocess = None
+        self.text_tokens = None
 
         # 🔥 Your knowledge base (can expand later)
         self.labels = [
@@ -18,9 +20,13 @@ class CLIPModel:
             "plant leaf with virus infection"
         ]
 
-        self.text_tokens = clip.tokenize(self.labels).to(self.device)
+    def _ensure_loaded(self):
+        if self.model is None:
+            self.model, self.preprocess = clip.load("ViT-B/32", device=self.device)
+            self.text_tokens = clip.tokenize(self.labels).to(self.device)
 
     def predict(self, image_path):
+        self._ensure_loaded()
         image = self.preprocess(Image.open(image_path)).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
