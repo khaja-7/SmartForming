@@ -1,6 +1,6 @@
 # API Layer
 fastapi>=0.115.0
-uvicorn>=0.30.6
+uvicorn[standard]>=0.30.6
 python-multipart>=0.0.9
 requests>=2.31.0
 
@@ -15,7 +15,7 @@ numpy>=2.0
 pandas>=2.2
 joblib>=1.4
 pillow>=10.0
-opencv-python>=4.8.0
+opencv-python-headless>=4.8.0
 
 # Advanced Models & Integrations
 google-genai>=1.0.0

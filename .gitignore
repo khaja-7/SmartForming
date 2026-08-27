@@ -13,6 +13,8 @@ env/
 
 # Node.js
 node_modules/
+build/
+.vercel/
 npm-debug.log
 yarn-debug.log
 yarn-error.log
@@ -42,19 +44,20 @@ yield_model/data/
 *.xlsx
 
 # Machine Learning Models
-# Exclude the large crop model and globally ignore general extensions
 *.h5
 *.onnx
 
-# Explicitly ignore the large crop recommendation model
-crop_model/models/improved_crop_model.pkl
-
-# Allow tracking of specific small models
+# Allow tracking of all essential lightweight trained models and encoders
 !disease_model/models/disease_model.pth
+!disease_model/models/class_names.json
+!disease_model/models/model_metadata.json
 !yield_model/models/yield_model.pkl
 !yield_model/models/area_encoder.pkl
 !yield_model/models/crop_encoder.pkl
+!yield_model/models/model_metadata.json
+!crop_model/models/improved_crop_model.pkl
 !crop_model/models/label_encoder.pkl
+!crop_model/models/model_metadata.json
 
 # Specific Debug / Old / Test files
 debug_*.py

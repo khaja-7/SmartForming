@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Droplets, CheckCircle, AlertTriangle, Loader2, Brain, Leaf, Sun, CloudRain, FlaskConical, Layers, Hexagon, Sprout } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 const Crop = () => {
     const { t } = useTranslation();
@@ -30,7 +31,7 @@ const Crop = () => {
         setResult(null);
 
         try {
-            const { data } = await axios.post('http://127.0.0.1:8000/predict-crop', formData);
+            const { data } = await axios.post(`${API_BASE_URL}/predict-crop`, formData);
             setResult(data);
         } catch (err) {
             setError(err.response?.data?.error || 'Failed to initialize array.');

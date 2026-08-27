@@ -9,6 +9,7 @@ import {
     Zap, Heart, Microscope, Pill, TreeDeciduous, AlertOctagon,
     Lightbulb, TriangleAlert
 } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 /* ═══════════════════════════════════════════════════
    HELPER: Severity color mapping
@@ -217,7 +218,7 @@ const Disease = () => {
         formData.append('file', file);
 
         try {
-            const { data } = await axios.post('http://127.0.0.1:8000/plant-doctor', formData, {
+            const { data } = await axios.post(`${API_BASE_URL}/plant-doctor`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 timeout: 30000,
             });

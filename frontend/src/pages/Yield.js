@@ -11,6 +11,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer
 } from 'recharts';
+import { API_BASE_URL } from '../config/api';
 
 const dynamicTranslations = {
   // Explanation Keys
@@ -641,7 +642,7 @@ const Yield = () => {
     setError(null);
     setResult(null);
     try {
-      const res = await fetch('http://127.0.0.1:8000/predict-yield-v2/full', {
+      const res = await fetch(`${API_BASE_URL}/predict-yield-v2/full`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

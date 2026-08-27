@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { BrainCircuit, Send, User, Bot, Loader2, Sparkles } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 const FarmAssistant = () => {
     const { t, i18n } = useTranslation();
@@ -24,6 +25,7 @@ const FarmAssistant = () => {
                 text: t('assistant_greeting')
             }]);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [t, i18n.language]);
 
     const [inputValue, setInputValue] = useState('');
@@ -49,7 +51,7 @@ const FarmAssistant = () => {
         setLoading(true);
 
         try {
-            const { data } = await axios.post('http://127.0.0.1:8000/farm-assistant', {
+            const { data } = await axios.post(`${API_BASE_URL}/farm-assistant`, {
                 question: userMsg.text
             });
 

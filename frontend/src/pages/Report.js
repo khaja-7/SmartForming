@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { FileText, CheckCircle, AlertTriangle, Loader2, UploadCloud, Map, Droplets } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 const STATES = [
     'Andhra Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Gujarat',
@@ -70,7 +71,7 @@ const Report = () => {
         }
 
         try {
-            const { data } = await axios.post('http://127.0.0.1:8000/smart-report', payload, {
+            const { data } = await axios.post(`${API_BASE_URL}/smart-report`, payload, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setResult(data.smart_report);
