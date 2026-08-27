@@ -1,15 +1,21 @@
 import torch
-import clip
 from PIL import Image
+
+try:
+    import clip
+except ImportError:
+    clip = None
 
 class CLIPModel:
     def __init__(self):
+        if clip is None:
+            raise ImportError("OpenAI CLIP is not installed")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = None
         self.preprocess = None
         self.text_tokens = None
 
-        # 🔥 Your knowledge base (can expand later)
+        # Knowledge base
         self.labels = [
             "tomato leaf with early blight disease",
             "tomato leaf with septoria leaf spot",
