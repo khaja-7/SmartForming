@@ -27,6 +27,7 @@ if hasattr(sys.stdout, 'reconfigure'):
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 
+import gc
 import shutil
 import logging
 import platform
@@ -40,6 +41,10 @@ load_dotenv()
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
+
+import torch
+# Optimize PyTorch memory footprint on low-memory cloud containers (512MB RAM)
+torch.set_num_threads(1)
 
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -154,114 +159,45 @@ def cleanup_outputs(max_files: int = 20):
 
 
 # ══════════════════════════════════════════════════════════════
-# PART 2 + 3 — SAFE STARTUP MODEL LOADING + DIAGNOSTICS BANNER
+# PART 2 + 3 — LEAN STARTUP (INSTANT PORT BINDING)
 # ══════════════════════════════════════════════════════════════
 
 @app.on_event("startup")
 def startup():
-    global disease_engine, crop_engine, yield_engine, yield_pipeline
-    global _disease_loaded, _crop_loaded, _yield_loaded
-    global ensemble_engine, _ensemble_loaded
-
-    # ── Version probing ───────────────────────────────────────
-    py_ver    = platform.python_version()
-    np_ver    = _safe_import_version("numpy")
-    torch_ver = _safe_import_version("torch")
-
     # ── Fix Joblib unpickling for models saved with 'config' ──
     import smart_system.config
     sys.modules['config'] = smart_system.config
 
-    # ── Load models safely ────────────────────────────────────
-    disease_status = _load_disease()
-    crop_status    = _load_crop()
-    yield_status   = _load_yield()
+    py_ver    = platform.python_version()
+    np_ver    = _safe_import_version("numpy")
+    torch_ver = _safe_import_version("torch")
 
-    # ── Load Yield Trends ─────────────────────────────────────
-    global yield_trends_df
-    try:
-        import pandas as pd
-        from smart_system.config import YIELD_MODEL_DIR
-        trends_path = os.path.join(YIELD_MODEL_DIR, "yield_trends.csv")
-        if os.path.exists(trends_path):
-            yield_trends_df = pd.read_csv(trends_path)
-            log_info(f"Loaded Yield Trends: {len(yield_trends_df)} rows")
-    except Exception as e:
-        log_error(f"Failed to load Yield Trends: {e}")
+    disease_avail = os.path.isfile(smart_system.config.DISEASE_MODEL_PATH)
+    crop_avail    = os.path.isfile(smart_system.config.CROP_MODEL_PATH)
+    yield_avail   = os.path.isfile(smart_system.config.YIELD_MODEL_PATH)
 
-    # ── Initialize Ensemble Engine ───────────────────────
-    # Primary model (EfficientNet-B0) is ready; secondary models load on demand.
-    if disease_status and disease_engine is not None:
-        try:
-            from smart_system.ensemble_engine import EnsembleEngine
-            ensemble_engine = EnsembleEngine(
-                disease_engine=disease_engine,
-                num_classes=len(disease_engine.class_names),
-                enable_early_exit=True,
-            )
-            _ensemble_loaded = True
-            log_info("Ensemble Engine initialized [OK] (Secondary models will load on-demand)")
-        except Exception as e:
-            log_error(f"Ensemble Engine init failed: {e}")
-            ensemble_engine = None
-
-    # ── Initialize Plant Doctor Pipeline (now with Ensemble) ───
-    global plant_doctor_pipeline
-    if disease_status and disease_engine is not None:
-        try:
-            from smart_system.plant_doctor import PlantDoctorPipeline
-            plant_doctor_pipeline = PlantDoctorPipeline(
-                disease_engine=disease_engine,
-                output_dir=os.path.join(PROJECT_ROOT, "tmp", "plant_doctor_output"),
-                enable_gradcam=True,
-                enable_similarity=True,
-                unknown_threshold=60.0,
-                ensemble_engine=ensemble_engine,   # Pass ensemble (None if not loaded)
-            )
-            log_info("Plant Doctor Pipeline initialized [OK]")
-        except Exception as e:
-            log_error(f"Plant Doctor Pipeline init failed: {e}")
-
-    # ── Initialize Phase-1 Yield Prediction Pipeline ──────────
-    if yield_status and yield_engine is not None and yield_engine._use_encoders:
-        try:
-            from smart_system.yield_predictor.pipeline import YieldPipeline
-            yield_pipeline = YieldPipeline()
-            yield_pipeline.load(
-                model         = yield_engine.model,
-                area_encoder  = yield_engine.area_encoder,
-                crop_encoder  = yield_engine.crop_encoder,
-            )
-            log_info("Yield Prediction Pipeline (Phase-1) initialized [OK]")
-        except Exception as e:
-            log_error(f"Yield Pipeline init failed: {e}")
-
-    disease_icon  = "[OK]" if disease_status       else "[MISSING]"
-    crop_icon     = "[OK]" if crop_status           else "[MISSING]"
-    yield_icon    = "[OK]" if yield_status          else "[MISSING]"
-    doctor_icon   = "[OK]" if plant_doctor_pipeline else "[MISSING]"
-    ensemble_icon = "[OK]" if _ensemble_loaded       else "[NOT TRAINED]"
+    disease_icon  = "[READY]" if disease_avail else "[MISSING]"
+    crop_icon     = "[READY]" if crop_avail    else "[MISSING]"
+    yield_icon    = "[READY]" if yield_avail   else "[MISSING]"
 
     banner = f"""
 ================================
-  SMART AGRICULTURE AI API
+  SMART AGRICULTURE AI API (LEAN)
 ================================
   Python  : {py_ver}
   NumPy   : {np_ver}
   Torch   : {torch_ver}
-  Port    : 8000
+  Port    : {os.environ.get('PORT', 8000)}
   Started : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 --------------------------------
-  Models Status:
+  Model Files on Disk:
     Disease Model    {disease_icon}
     Crop Model       {crop_icon}
     Yield Model      {yield_icon}
-    Plant Doctor AI  {doctor_icon}
-    Ensemble Models  {ensemble_icon}
 ================================
 """
     print(banner)
-    log_info(f"Server started | disease={disease_status} | crop={crop_status} | yield={yield_status} | plant_doctor={'OK' if plant_doctor_pipeline else 'FAIL'}")
+    log_info("Server started in lean cloud mode (<50MB RAM boot, on-demand inference loading)")
 
 
 def _safe_import_version(pkg: str) -> str:
@@ -274,6 +210,8 @@ def _safe_import_version(pkg: str) -> str:
 
 def _load_disease() -> bool:
     global disease_engine, _disease_loaded
+    if _disease_loaded and disease_engine is not None:
+        return True
     try:
         from smart_system.disease_engine import DiseaseEngine
         engine = DiseaseEngine()
@@ -284,6 +222,7 @@ def _load_disease() -> bool:
             log_info("Disease Model Loaded [OK]")
         else:
             log_error("Disease Model load() returned False ⚠️")
+        gc.collect()
         return ok
     except Exception as e:
         log_error(f"Disease Model load exception: {e}")
@@ -292,6 +231,8 @@ def _load_disease() -> bool:
 
 def _load_crop() -> bool:
     global crop_engine, _crop_loaded
+    if _crop_loaded and crop_engine is not None:
+        return True
     try:
         from smart_system.crop_engine import CropEngine
         engine = CropEngine()
@@ -302,6 +243,7 @@ def _load_crop() -> bool:
             log_info("Crop Model Loaded [OK]")
         else:
             log_error("Crop Model load() returned False ⚠️")
+        gc.collect()
         return ok
     except Exception as e:
         log_error(f"Crop Model load exception: {e}")
@@ -310,6 +252,8 @@ def _load_crop() -> bool:
 
 def _load_yield() -> bool:
     global yield_engine, _yield_loaded
+    if _yield_loaded and yield_engine is not None:
+        return True
     try:
         from smart_system.yield_engine import YieldEngine
         engine = YieldEngine()
@@ -320,10 +264,80 @@ def _load_yield() -> bool:
             log_info("Yield Model Loaded [OK]")
         else:
             log_error("Yield Model load() returned False ⚠️")
+        gc.collect()
         return ok
     except Exception as e:
         log_error(f"Yield Model load exception: {e}")
         return False
+
+
+def _load_plant_doctor():
+    global plant_doctor_pipeline, ensemble_engine, _ensemble_loaded
+    if plant_doctor_pipeline is not None:
+        return plant_doctor_pipeline
+    _load_disease()
+    if disease_engine is not None:
+        try:
+            if ensemble_engine is None:
+                from smart_system.ensemble_engine import EnsembleEngine
+                ensemble_engine = EnsembleEngine(
+                    disease_engine=disease_engine,
+                    num_classes=len(disease_engine.class_names),
+                    enable_early_exit=True,
+                )
+                _ensemble_loaded = True
+            from smart_system.plant_doctor import PlantDoctorPipeline
+            plant_doctor_pipeline = PlantDoctorPipeline(
+                disease_engine=disease_engine,
+                output_dir=os.path.join(PROJECT_ROOT, "tmp", "plant_doctor_output"),
+                enable_gradcam=True,
+                enable_similarity=False,
+                unknown_threshold=60.0,
+                ensemble_engine=ensemble_engine,
+            )
+            log_info("Plant Doctor Pipeline initialized [OK]")
+        except Exception as e:
+            log_error(f"Plant Doctor Pipeline init failed: {e}")
+        gc.collect()
+    return plant_doctor_pipeline
+
+
+def _load_yield_pipeline():
+    global yield_pipeline
+    if yield_pipeline is not None:
+        return yield_pipeline
+    _load_yield()
+    if yield_engine is not None and yield_engine._use_encoders:
+        try:
+            from smart_system.yield_predictor.pipeline import YieldPipeline
+            yield_pipeline = YieldPipeline()
+            yield_pipeline.load(
+                model=yield_engine.model,
+                area_encoder=yield_engine.area_encoder,
+                crop_encoder=yield_engine.crop_encoder,
+            )
+            log_info("Yield Prediction Pipeline initialized [OK]")
+        except Exception as e:
+            log_error(f"Yield Pipeline init failed: {e}")
+        gc.collect()
+    return yield_pipeline
+
+
+def _load_yield_trends():
+    global yield_trends_df
+    if yield_trends_df is not None:
+        return yield_trends_df
+    try:
+        import pandas as pd
+        from smart_system.config import YIELD_MODEL_DIR
+        trends_path = os.path.join(YIELD_MODEL_DIR, "yield_trends.csv")
+        if os.path.exists(trends_path):
+            yield_trends_df = pd.read_csv(trends_path)
+            log_info(f"Loaded Yield Trends: {len(yield_trends_df)} rows")
+    except Exception as e:
+        log_error(f"Failed to load Yield Trends: {e}")
+    gc.collect()
+    return yield_trends_df
 
 
 # ══════════════════════════════════════════════════════════════
@@ -437,12 +451,12 @@ def error_response(message: str, status_code: int = 500):
 
 @app.get("/health")
 async def health_check():
+    import smart_system.config as cfg
     return {
         "status":          "running",
-        "disease_model":   _disease_loaded,
-        "ensemble_models": _ensemble_loaded,
-        "crop_model":      _crop_loaded,
-        "yield_model":     _yield_loaded,
+        "disease_model":   _disease_loaded or os.path.isfile(cfg.DISEASE_MODEL_PATH),
+        "crop_model":      _crop_loaded or os.path.isfile(cfg.CROP_MODEL_PATH),
+        "yield_model":     _yield_loaded or os.path.isfile(cfg.YIELD_MODEL_PATH),
         "timestamp":       datetime.now().isoformat()
     }
 
@@ -455,6 +469,7 @@ async def health_check():
 async def predict_disease(file: UploadFile = File(...)):
     log_request("/predict-disease", {"filename": file.filename})
     try:
+        _load_disease()
         if not _disease_loaded or disease_engine is None:
             error_response("Disease model is not loaded", 503)
 
@@ -569,6 +584,7 @@ async def detect_disease(request: Request, file: UploadFile = File(...)):
             with open(file_path, "wb") as buf:
                 shutil.copyfileobj(file.file, buf)
 
+            _load_plant_doctor()
             # ── OPTION A: Full pipeline (Ensemble + Grad-CAM) ─
             if plant_doctor_pipeline is not None:
                 diagnosis = plant_doctor_pipeline.diagnose(file_path, top_k=5)
@@ -794,6 +810,7 @@ async def update_ensemble_weights(payload: dict):
 async def predict_crop(request: CropRequest):
     log_request("/predict-crop", request.dict())
     try:
+        _load_crop()
         if not _crop_loaded or crop_engine is None:
             error_response("Crop model is not loaded", 503)
 
@@ -849,6 +866,7 @@ async def predict_crop(request: CropRequest):
 async def predict_yield(request: YieldRequest):
     log_request("/predict-yield", request.dict())
     try:
+        _load_yield()
         if not _yield_loaded or yield_engine is None:
             error_response("Yield model is not loaded", 503)
 
@@ -913,6 +931,7 @@ async def predict_yield_v2(payload: dict):
             detail={"status": "error", "message": ve.errors()}
         )
 
+    _load_yield_pipeline()
     if yield_pipeline is None:
         error_response("Yield Prediction Pipeline is not loaded", 503)
 
@@ -973,6 +992,7 @@ async def predict_yield_full(payload: dict):
             detail={"status": "error", "message": ve.errors()}
         )
 
+    _load_yield_pipeline()
     if yield_pipeline is None:
         error_response("Yield Prediction Pipeline is not loaded", 503)
 
@@ -1033,6 +1053,7 @@ async def plant_doctor_diagnose(request: Request, file: UploadFile = File(...)):
     """Full AI Plant Doctor diagnosis with explainability."""
     log_request("/plant-doctor", {"filename": file.filename})
     try:
+        _load_plant_doctor()
         if plant_doctor_pipeline is None:
             error_response("Plant Doctor pipeline is not loaded", 503)
 
@@ -1094,6 +1115,7 @@ async def plant_doctor_diagnose(request: Request, file: UploadFile = File(...)):
 @app.post("/yield-trends")
 async def get_yield_trends(request: YieldTrendRequest):
     log_request("/yield-trends", request.dict())
+    _load_yield_trends()
     if yield_trends_df is None:
         error_response("Yield trends data not loaded", 503)
         
@@ -1156,34 +1178,37 @@ async def smart_report(
             ext = os.path.splitext(file.filename)[1].lower()
             if ext not in VALID_IMAGE_EXTENSIONS:
                 report["disease_prediction"] = {"error": "Invalid image file type"}
-            elif not _disease_loaded or disease_engine is None:
-                report["disease_prediction"] = {"error": "Disease model not loaded"}
             else:
-                temp_dir  = os.path.join(PROJECT_ROOT, "tmp")
-                os.makedirs(temp_dir, exist_ok=True)
-                safe_name = f"report_{datetime.now().strftime('%H%M%S%f')}{ext}"
-                file_path = os.path.join(temp_dir, safe_name)
-                try:
-                    with open(file_path, "wb") as buf:
-                        shutil.copyfileobj(file.file, buf)
-                    d_res = disease_engine.predict(file_path)
-                    if d_res.get("success"):
-                        report["disease_prediction"] = {
-                            "disease":    d_res["disease_name"],
-                            "confidence": d_res["confidence"],
-                        }
-                        log_prediction("DISEASE", d_res["disease_name"])
-                    else:
-                        report["disease_prediction"] = {"error": d_res.get("error")}
-                finally:
-                    if os.path.exists(file_path):
-                        os.remove(file_path)
+                _load_disease()
+                if not _disease_loaded or disease_engine is None:
+                    report["disease_prediction"] = {"error": "Disease model not loaded"}
+                else:
+                    temp_dir  = os.path.join(PROJECT_ROOT, "tmp")
+                    os.makedirs(temp_dir, exist_ok=True)
+                    safe_name = f"report_{datetime.now().strftime('%H%M%S%f')}{ext}"
+                    file_path = os.path.join(temp_dir, safe_name)
+                    try:
+                        with open(file_path, "wb") as buf:
+                            shutil.copyfileobj(file.file, buf)
+                        d_res = disease_engine.predict(file_path)
+                        if d_res.get("success"):
+                            report["disease_prediction"] = {
+                                "disease":    d_res["disease_name"],
+                                "confidence": d_res["confidence"],
+                            }
+                            log_prediction("DISEASE", d_res["disease_name"])
+                        else:
+                            report["disease_prediction"] = {"error": d_res.get("error")}
+                    finally:
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
         except Exception as e:
             report["disease_prediction"] = {"error": str(e)}
             log_error(f"Smart-report disease error: {e}")
 
     # 2. Crop ─────────────────────────────────────────────
     try:
+        _load_crop()
         if not _crop_loaded or crop_engine is None:
             report["crop_recommendation"] = {"error": "Crop model not loaded"}
         else:
@@ -1206,6 +1231,7 @@ async def smart_report(
 
     # 3. Yield ────────────────────────────────────────────
     try:
+        _load_yield()
         if not _yield_loaded or yield_engine is None:
             report["yield_prediction"] = {"error": "Yield model not loaded"}
         else:
