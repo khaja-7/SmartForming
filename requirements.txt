@@ -1,17 +1,19 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 # API Layer
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.6
 python-multipart>=0.0.9
 requests>=2.31.0
 
-# Machine Learning & AI Models
-torch>=2.3
-torchvision>=0.18
+# Machine Learning & AI Models (CPU-optimized for cloud deployment)
+torch>=2.2.0
+torchvision>=0.17.0
 xgboost>=2.0
 scikit-learn>=1.5
 
 # Data Processing & Utilities
-numpy>=2.0
+numpy>=1.26.0
 pandas>=2.2
 joblib>=1.4
 pillow>=10.0
