@@ -53,6 +53,8 @@ const FarmAssistant = () => {
         try {
             const { data } = await axios.post(`${API_BASE_URL}/farm-assistant`, {
                 question: userMsg.text
+            }, {
+                timeout: 90000,
             });
 
             const aiMsg = {
@@ -62,10 +64,14 @@ const FarmAssistant = () => {
             };
             setMessages(prev => [...prev, aiMsg]);
         } catch (err) {
+            let msg = err.response?.data?.error || err.message;
+            if (err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network')) {
+                msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please ask your question again in a moment.';
+            }
             const errorMsg = {
                 id: Date.now() + 1,
                 sender: 'error',
-                text: err.response?.data?.error || "AI assistant is currently unavailable. Please try again later."
+                text: msg || "AI assistant is currently unavailable. Please try again later."
             };
             setMessages(prev => [...prev, errorMsg]);
         } finally {

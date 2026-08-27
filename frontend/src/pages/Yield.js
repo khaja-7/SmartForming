@@ -642,16 +642,24 @@ const Yield = () => {
     setError(null);
     setResult(null);
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
       const res = await fetch(`${API_BASE_URL}/predict-yield-v2/full`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail?.message || data?.detail || 'Prediction failed');
       setResult(data);
     } catch (err) {
-      setError(err.message || 'Failed to connect to AI API.');
+      let msg = err.message;
+      if (err.name === 'AbortError' || err.message?.toLowerCase().includes('failed to fetch')) {
+        msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Run Yield Analysis" again.';
+      }
+      setError(msg || 'Failed to connect to AI API.');
     } finally {
       setLoading(false);
     }

@@ -31,10 +31,16 @@ const Crop = () => {
         setResult(null);
 
         try {
-            const { data } = await axios.post(`${API_BASE_URL}/predict-crop`, formData);
+            const { data } = await axios.post(`${API_BASE_URL}/predict-crop`, formData, {
+                timeout: 90000,
+            });
             setResult(data);
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to initialize array.');
+            let msg = err.response?.data?.detail?.message || err.response?.data?.error || err.message;
+            if (err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network')) {
+                msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Predict Optimal Crop" again.';
+            }
+            setError(msg || 'Failed to initialize array.');
         } finally {
             setLoading(false);
         }

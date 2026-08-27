@@ -72,11 +72,16 @@ const Report = () => {
 
         try {
             const { data } = await axios.post(`${API_BASE_URL}/smart-report`, payload, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 90000,
             });
             setResult(data.smart_report);
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to initialize system core.');
+            let msg = err.response?.data?.detail?.message || err.response?.data?.error || err.message;
+            if (err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network')) {
+                msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Generate Intelligence Report" again.';
+            }
+            setError(msg || 'Failed to initialize system core.');
         } finally {
             setLoading(false);
         }
