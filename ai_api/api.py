@@ -446,8 +446,20 @@ def error_response(message: str, status_code: int = 500):
 
 
 # ══════════════════════════════════════════════════════════════
-# PART 8 — HEALTH CHECK ENDPOINT
+# PART 8 — ROOT & HEALTH CHECK ENDPOINTS
 # ══════════════════════════════════════════════════════════════
+
+@app.get("/")
+async def root():
+    return {
+        "status":  "online",
+        "service": "Smart Agriculture AI System API",
+        "version": "3.0.0",
+        "docs":    "/docs",
+        "health":  "/health",
+        "timestamp": datetime.now().isoformat()
+    }
+
 
 @app.get("/health")
 async def health_check():

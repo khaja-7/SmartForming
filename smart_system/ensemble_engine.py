@@ -371,6 +371,23 @@ class EnsembleEngine:
             import torch.nn.functional as F
             from PIL import Image
 
+            if self.transform is None and hasattr(self.disease_engine, 'transform'):
+                self.transform = self.disease_engine.transform
+            if self.device is None and hasattr(self.disease_engine, 'device'):
+                self.device = self.disease_engine.device
+            if not self.class_names and hasattr(self.disease_engine, 'class_names'):
+                self.class_names = self.disease_engine.class_names
+
+            if self.transform is None:
+                from torchvision import transforms
+                self.transform = transforms.Compose([
+                    transforms.Resize((224, 224)),
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                ])
+            if self.device is None:
+                self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
             img        = Image.open(image_path).convert("RGB")
             img_tensor = self.transform(img).unsqueeze(0).to(self.device)
 

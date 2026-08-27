@@ -259,15 +259,23 @@ class PlantDoctorPipeline:
         # Otherwise fall back to the original single-model DiseaseEngine.
         # Grad-CAM (Stage 7) is ALWAYS driven by EfficientNet-B0 only.
         # ==============================================================
+        prediction = None
         if self._ensemble_predictor is not None:
-            logger.info("Stage 2/13: Ensemble Inference (EfficientNet-B0 + ResNet-50 + EfficientNet-B1)")
-            prediction = self._ensemble_predictor.predict(image_path, top_k=top_k)
-            # Surface ensemble metadata in final result
-            result["ensemble_meta"] = prediction.get("ensemble_meta", {})
-            if prediction["ensemble_meta"].get("used_ensemble"):
-                result["final_source"] = "Ensemble (B0 + R50 + B1)"
-        else:
-            logger.info("Stage 2/13: Core Model Inference (EfficientNet-B0 single model)")
+            try:
+                logger.info("Stage 2/13: Ensemble Inference (EfficientNet-B0 + ResNet-50 + EfficientNet-B1)")
+                ens_pred = self._ensemble_predictor.predict(image_path, top_k=top_k)
+                if ens_pred and ens_pred.get("success"):
+                    prediction = ens_pred
+                    meta = prediction.get("ensemble_meta") or {}
+                    result["ensemble_meta"] = meta
+                    if meta.get("used_ensemble"):
+                        result["final_source"] = "Ensemble (B0 + R50 + B1)"
+            except Exception as e:
+                logger.warning(f"Ensemble prediction failed, falling back to core model: {e}")
+                prediction = None
+
+        if prediction is None or not prediction.get("success"):
+            logger.info("Stage 2/13: Core Model Inference (Single Model)")
             prediction = self.disease_engine.predict(image_path, top_k=top_k)
 
         if not prediction.get("success"):
