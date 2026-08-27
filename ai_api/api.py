@@ -132,7 +132,28 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    if request.method == "OPTIONS":
+        from fastapi.responses import Response
+        response = Response(status_code=200)
+    else:
+        try:
+            response = await call_next(request)
+        except Exception as e:
+            logger.error(f"Unhandled request exception: {e}")
+            response = JSONResponse(
+                status_code=500,
+                content={"status": "error", "message": str(e)}
+            )
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Access-Control-Expose-Headers"] = "*"
+    return response
 
 # ── Part 3.5: Serve Heatmap Outputs to Frontend ──────────────
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "tmp", "plant_doctor_output")

@@ -1,14 +1,14 @@
 /**
  * Centralized API Base URL Configuration
  * 
- * In local development, defaults to 'http://127.0.0.1:8000'.
- * In production (e.g. Vercel), configure `REACT_APP_API_URL` 
- * in your environment variables to point to your Render backend URL:
- * https://your-backend-name.onrender.com
+ * Defaults to the production Render backend URL:
+ * https://smartforming.onrender.com
+ * 
+ * Can be overridden via REACT_APP_API_URL environment variable.
  */
 
 export const API_BASE_URL = (
-  process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'
+  process.env.REACT_APP_API_URL || 'https://smartforming.onrender.com'
 ).replace(/\/+$/, '');
 
 export default API_BASE_URL;
