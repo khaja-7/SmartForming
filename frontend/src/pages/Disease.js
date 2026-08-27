@@ -220,12 +220,16 @@ const Disease = () => {
         try {
             const { data } = await axios.post(`${API_BASE_URL}/plant-doctor`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
-                timeout: 30000,
+                timeout: 90000,
             });
             setResult(data);
             setImageView('original');
         } catch (err) {
-            setError(err.response?.data?.detail?.message || err.response?.data?.error || err.message || 'Analysis failed. Ensure the AI server is running.');
+            let msg = err.response?.data?.detail?.message || err.response?.data?.error || err.message;
+            if (err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout')) {
+                msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Run AI Diagnosis" again now.';
+            }
+            setError(msg || 'Analysis failed. Ensure the AI server is running.');
         } finally {
             setLoading(false);
         }

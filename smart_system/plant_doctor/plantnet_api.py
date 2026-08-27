@@ -6,6 +6,12 @@ class PlantNetAPI:
         self.url = "https://my-api.plantnet.org/v2/identify/all"
 
     def identify_plant(self, image_path):
+        if not self.api_key or not str(self.api_key).strip():
+            return {
+                "plant_name": "Unknown",
+                "confidence": 0
+            }
+
         try:
             with open(image_path, "rb") as img_file:
                 files = {
@@ -17,7 +23,7 @@ class PlantNetAPI:
                     "organs": ["leaf"]
                 }
 
-                response = requests.post(self.url, files=files, params=params)
+                response = requests.post(self.url, files=files, params=params, timeout=5)
                 data = response.json()
 
                 if "results" not in data or len(data["results"]) == 0:
