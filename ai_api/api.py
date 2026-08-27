@@ -126,10 +126,18 @@ app = FastAPI(
     description="Production-grade AI inference API for plant disease, crop recommendation, and yield prediction."
 )
 
+ALLOWED_ORIGINS = [
+    "https://smart-agriculture-ai-delta.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
@@ -137,6 +145,9 @@ app.add_middleware(
 
 @app.middleware("http")
 async def add_cors_headers(request: Request, call_next):
+    origin = request.headers.get("origin")
+    allowed_origin = origin if (origin in ALLOWED_ORIGINS or (origin and "vercel.app" in origin)) else "https://smart-agriculture-ai-delta.vercel.app"
+
     if request.method == "OPTIONS":
         from fastapi.responses import Response
         response = Response(status_code=200)
@@ -149,7 +160,8 @@ async def add_cors_headers(request: Request, call_next):
                 status_code=500,
                 content={"status": "error", "message": str(e)}
             )
-    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Origin"] = allowed_origin
+    response.headers["Access-Control-Allow-Credentials"] = "true"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH"
     response.headers["Access-Control-Allow-Headers"] = "*"
     response.headers["Access-Control-Expose-Headers"] = "*"
