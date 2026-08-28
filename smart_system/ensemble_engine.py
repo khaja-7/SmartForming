@@ -260,11 +260,15 @@ class EnsembleEngine:
             logger.error("Primary DiseaseEngine not loaded — cannot init ensemble.")
             return False
 
+        from . import config as cfg
+        if not (os.path.isfile(cfg.ENSEMBLE_RESNET50_PATH) and os.path.isfile(cfg.ENSEMBLE_EFFB1_PATH)):
+            logger.info("Secondary ensemble checkpoints not present on disk. Running in lean single-model mode (EfficientNet-B0).")
+            return False
+
         try:
             import torch
             import torch.nn as nn
             from torchvision import models
-            from . import config as cfg
 
             self.device      = self.disease_engine.device
             self.transform   = self.disease_engine.transform

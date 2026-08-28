@@ -626,14 +626,14 @@ const RiskCard = ({ risk }) => {
 
 const Yield = () => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState({ crop: 'Rice', state: 'Punjab', season: 'Kharif', year: 2022 });
+  const [formData, setFormData] = useState({ crop: 'Rice', state: 'Punjab', season: 'Kharif', year: '2022' });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   const handleChange = (e) => {
-    const val = e.target.name === 'year' ? parseInt(e.target.value, 10) : e.target.value;
-    setFormData(p => ({ ...p, [e.target.name]: val }));
+    const { name, value } = e.target;
+    setFormData(p => ({ ...p, [name]: value }));
   };
 
   const handlePredict = async (e) => {
@@ -641,13 +641,21 @@ const Yield = () => {
     setLoading(true);
     setError(null);
     setResult(null);
+
+    const payload = {
+      crop: formData.crop,
+      state: formData.state,
+      season: formData.season,
+      year: Number(formData.year) || 2022,
+    };
+
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 90000);
       const res = await fetch(`${API_BASE_URL}/predict-yield-v2/full`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -657,7 +665,7 @@ const Yield = () => {
     } catch (err) {
       let msg = err.message;
       if (err.name === 'AbortError' || err.message?.toLowerCase().includes('failed to fetch')) {
-        msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Run Yield Analysis" again.';
+        msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Run Yield Analysis" again in a few moments.';
       }
       setError(msg || 'Failed to connect to AI API.');
     } finally {

@@ -8,20 +8,21 @@ import { API_BASE_URL } from '../config/api';
 const Crop = () => {
     const { t } = useTranslation();
     const [formData, setFormData] = useState({
-        Nitrogen: 90,
-        Phosphorus: 40,
-        Potassium: 40,
-        Temperature: 28,
-        Humidity: 70,
-        pH: 6.5,
-        Rainfall: 200
+        Nitrogen: '90',
+        Phosphorus: '40',
+        Potassium: '40',
+        Temperature: '28',
+        Humidity: '70',
+        pH: '6.5',
+        Rainfall: '200'
     });
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: parseFloat(e.target.value) });
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handlePredict = async (e) => {
@@ -30,17 +31,27 @@ const Crop = () => {
         setError(null);
         setResult(null);
 
+        const payload = {
+            Nitrogen: Number(formData.Nitrogen) || 0,
+            Phosphorus: Number(formData.Phosphorus) || 0,
+            Potassium: Number(formData.Potassium) || 0,
+            Temperature: Number(formData.Temperature) || 0,
+            Humidity: Number(formData.Humidity) || 0,
+            pH: Number(formData.pH) || 6.5,
+            Rainfall: Number(formData.Rainfall) || 0,
+        };
+
         try {
-            const { data } = await axios.post(`${API_BASE_URL}/predict-crop`, formData, {
+            const { data } = await axios.post(`${API_BASE_URL}/predict-crop`, payload, {
                 timeout: 90000,
             });
             setResult(data);
         } catch (err) {
             let msg = err.response?.data?.detail?.message || err.response?.data?.error || err.message;
             if (err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network')) {
-                msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Predict Optimal Crop" again.';
+                msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Predict Optimal Crop" again in a few moments.';
             }
-            setError(msg || 'Failed to initialize array.');
+            setError(msg || 'Crop prediction request failed. Please try again.');
         } finally {
             setLoading(false);
         }

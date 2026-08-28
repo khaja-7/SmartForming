@@ -4,6 +4,7 @@ import { Leaf, Sprout, Wheat, FileText, Menu, X, BrainCircuit, Microscope } from
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './components/LanguageSwitcher';
+import { API_BASE_URL } from './config/api';
 
 import Home from './pages/Home';
 import Disease from './pages/Disease';
@@ -186,6 +187,15 @@ const Layout = ({ children }) => {
 
 function App() {
   const location = useLocation();
+
+  // Background wake-up ping for Render Free Tier (pre-warm server on page load)
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/health`, { method: 'GET' })
+      .catch(() => {
+        // Silently ignore cold-start wake-up failures
+      });
+  }, []);
+
   return (
     <Layout>
       <Routes location={location} key={location.pathname}>

@@ -24,16 +24,16 @@ const CROPS = [
 const Report = () => {
     const { t } = useTranslation();
     const [formData, setFormData] = useState({
-        Nitrogen: 90,
-        Phosphorus: 40,
-        Potassium: 40,
-        Temperature: 28,
-        Humidity: 70,
-        pH: 6.5,
-        Rainfall: 200,
+        Nitrogen: '90',
+        Phosphorus: '40',
+        Potassium: '40',
+        Temperature: '28',
+        Humidity: '70',
+        pH: '6.5',
+        Rainfall: '200',
         Area: 'Punjab',
         Crop: 'Rice',
-        Year: 2024
+        Year: '2024'
     });
     const [file, setFile] = useState(null);
     const [preview, setPreview] = useState(null);
@@ -42,11 +42,11 @@ const Report = () => {
     const [error, setError] = useState(null);
 
     const handleChange = (e) => {
-        const { name, value, type } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'number' ? parseFloat(value) : value
-        });
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
     const handleFileChange = (e) => {
@@ -66,9 +66,16 @@ const Report = () => {
         const payload = new FormData();
         if (file) payload.append('file', file);
 
-        for (const key in formData) {
-            payload.append(key, formData[key]);
-        }
+        payload.append('Nitrogen', Number(formData.Nitrogen) || 0);
+        payload.append('Phosphorus', Number(formData.Phosphorus) || 0);
+        payload.append('Potassium', Number(formData.Potassium) || 0);
+        payload.append('Temperature', Number(formData.Temperature) || 0);
+        payload.append('Humidity', Number(formData.Humidity) || 0);
+        payload.append('pH', Number(formData.pH) || 6.5);
+        payload.append('Rainfall', Number(formData.Rainfall) || 0);
+        payload.append('Area', formData.Area || 'Punjab');
+        payload.append('Crop', formData.Crop || 'Rice');
+        payload.append('Year', Number(formData.Year) || 2024);
 
         try {
             const { data } = await axios.post(`${API_BASE_URL}/smart-report`, payload, {
@@ -79,9 +86,9 @@ const Report = () => {
         } catch (err) {
             let msg = err.response?.data?.detail?.message || err.response?.data?.error || err.message;
             if (err.code === 'ECONNABORTED' || err.message?.toLowerCase().includes('timeout') || err.message?.toLowerCase().includes('network')) {
-                msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Generate Intelligence Report" again.';
+                msg = 'AI Server is waking up (Render Free Tier cold start takes ~30-40s). Please click "Generate Intelligence Report" again in a few moments.';
             }
-            setError(msg || 'Failed to initialize system core.');
+            setError(msg || 'Failed to generate farm report.');
         } finally {
             setLoading(false);
         }

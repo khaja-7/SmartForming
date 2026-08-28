@@ -32,6 +32,7 @@ yarn-error.log
 *.log
 logs/
 reports/
+tmp/
 
 # Data & Datasets
 # Exclude raw and processed data (too large for GitHub)

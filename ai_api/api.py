@@ -136,36 +136,13 @@ ALLOWED_ORIGINS = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_origin_regex=r"^https://.*\.vercel\.app$|^http://localhost(:\d+)?$|^http://127\.0\.0\.1(:\d+)?$",
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
-
-@app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    origin = request.headers.get("origin")
-    allowed_origin = origin if (origin in ALLOWED_ORIGINS or (origin and "vercel.app" in origin)) else "https://smart-agriculture-ai-delta.vercel.app"
-
-    if request.method == "OPTIONS":
-        from fastapi.responses import Response
-        response = Response(status_code=200)
-    else:
-        try:
-            response = await call_next(request)
-        except Exception as e:
-            logger.error(f"Unhandled request exception: {e}")
-            response = JSONResponse(
-                status_code=500,
-                content={"status": "error", "message": str(e)}
-            )
-    response.headers["Access-Control-Allow-Origin"] = allowed_origin
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Expose-Headers"] = "*"
-    return response
 
 # ── Part 3.5: Serve Heatmap Outputs to Frontend ──────────────
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "tmp", "plant_doctor_output")
@@ -1161,27 +1138,34 @@ async def plant_doctor_diagnose(request: Request, file: UploadFile = File(...)):
 async def get_yield_trends(request: YieldTrendRequest):
     log_request("/yield-trends", request.dict())
     _load_yield_trends()
-    if yield_trends_df is None:
-        error_response("Yield trends data not loaded", 503)
-        
+
     try:
-        filtered = yield_trends_df[
-            (yield_trends_df['Area'].str.lower() == request.Area.lower()) &
-            (yield_trends_df['Item'].str.lower() == request.Crop.lower())
-        ]
-        
-        if filtered.empty:
-            return {"status": "success", "success": True, "area": request.Area, "crop": request.Crop, "trends": []}
-            
-        filtered = filtered.sort_values(by='Year')
-        
-        trends = []
-        for _, row in filtered.iterrows():
-            trends.append({
-                "Year": int(row['Year']),
-                "Yield": float(row['Yield'])
-            })
-            
+        if yield_trends_df is not None:
+            filtered = yield_trends_df[
+                (yield_trends_df['Area'].str.lower() == request.Area.lower()) &
+                (yield_trends_df['Item'].str.lower() == request.Crop.lower())
+            ]
+            if not filtered.empty:
+                filtered = filtered.sort_values(by='Year')
+                trends = [
+                    {"Year": int(row['Year']), "Yield": float(row['Yield'])}
+                    for _, row in filtered.iterrows()
+                ]
+                return {
+                    "status": "success",
+                    "success": True,
+                    "area": request.Area,
+                    "crop": request.Crop,
+                    "trends": trends
+                }
+
+        # Fallback to embedded trend knowledge base
+        from smart_system.yield_predictor.context import get_trend_data
+        t_data = get_trend_data(request.Crop, request.Area)
+        years = t_data.get("years", [])
+        yields = t_data.get("yields", [])
+        trends = [{"Year": int(y), "Yield": float(yd)} for y, yd in zip(years, yields)]
+
         return {
             "status": "success",
             "success": True,

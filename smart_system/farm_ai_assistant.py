@@ -5,9 +5,8 @@ import logging
 logger = logging.getLogger("farm_ai_assistant")
 
 FALLBACK_MODELS = [
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
-    'gemini-2.0-flash',
+    'gemini-2.5-flash',
+    'gemini-3.6-flash',
 ]
 
 def generate_farming_response(user_question: str) -> str:
@@ -64,6 +63,8 @@ Tone: Knowledgeable, encouraging, practical, and precise."""
                         return response.text.strip()
                 except Exception as model_err:
                     logger.warning(f"Gemini model {model_name} failed: {model_err}")
+                    if "403" in str(model_err) or "PERMISSION_DENIED" in str(model_err) or "NOT_FOUND" in str(model_err):
+                        break
         except Exception as e:
             logger.warning(f"Gemini API initialization failed: {e}")
 
