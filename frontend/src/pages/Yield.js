@@ -18,129 +18,129 @@ const dynamicTranslations = {
   temperature_low: {
     en: "Temperature is below ideal for the crop. Cold stress may reduce yield.",
     hi: "तापमान आदर्श से कम है। ठंड के तनाव से उपज कम हो सकती है।",
-    mr: "तापमान आदर्शापेक्षा कमी आहे. थंडीच्या ताणामुळे उत्पादन कमी होऊ शकते."
+    te: "ఉష్ణోగ్రత పంటకు అవసరమైన దానికంటే తక్కువగా ఉంది. చలి ప్రభావం వల్ల దిగుబడి తగ్గవచ్చు."
   },
   temperature_high: {
     en: "Temperature is above the ideal maximum. Heat stress may reduce grain filling.",
     hi: "तापमान आदर्श अधिकतम से ऊपर है। गर्मी के तनाव से दाने भरने में कमी आ सकती है।",
-    mr: "तापमान आदर्श कमाल मर्यादेच्या वर आहे. उष्णतेच्या ताणामुळे दाणे भरण्यात अडथळा येऊ शकतो."
+    te: "ఉష్ణోగ్రత గరిష్ట స్థాయి కంటే ఎక్కువగా ఉంది. అధిక వేడి వల్ల గింజ సరిగ్గా పట్టకపోవచ్చు."
   },
   temperature_optimal: {
     en: "Temperature is within the optimal range.",
     hi: "तापमान इष्टतम है।",
-    mr: "तापमान अनुकूल मर्यादेत आहे."
+    te: "ఉష్ణోగ్రత పంట పెరుగుదలకు అనుకూలంగా ఉంది."
   },
   rainfall_low: {
     en: "Rainfall deficit detected. Supplemental irrigation is critical.",
     hi: "वर्षा की कमी। पूरक सिंचाई आवश्यक है।",
-    mr: "पावसाची कमतरता. पूरक सिंचन आवश्यक आहे."
+    te: "వర్షపాతం లోటు ఉంది. అదనపు నీటి పారుదల చాలా అవసరం."
   },
   rainfall_high: {
     en: "Excess rainfall may cause waterlogging and increase disease pressure.",
     hi: "अत्यधिक वर्षा से बीमारियों का खतरा बढ़ सकता है।",
-    mr: "जास्त पावसामुळे पाणी साचून रोगाचा धोका वाढू शकतो."
+    te: "అధిక వర్షపాతం వల్ల నీరు నిలిచిపోయి తెగుళ్ల ముప్పు పెరగవచ్చు."
   },
   rainfall_optimal: {
     en: "Rainfall is adequate for crop requirements.",
     hi: "वर्षा फसल के लिए पर्याप्त है।",
-    mr: "पाऊस पिकाच्या गरजेसाठी पुरेसा आहे."
+    te: "పంట అవసరాలకు వర్షపాతం సరిపడా ఉంది."
   },
   humidity_low: {
     en: "Low humidity may cause water stress.",
     hi: "कम आर्द्रता जल तनाव पैदा कर सकती है।",
-    mr: "कमी आर्द्रतेमुळे पाण्याचा ताण येऊ शकतो."
+    te: "తక్కువ తేమ వల్ల మొక్కల్లో నీటి కొరత ఏర్పడవచ్చు."
   },
   humidity_high: {
     en: "High humidity increases fungal disease risk.",
     hi: "उच्च आर्द्रता फंगल रोगों के जोखिम को बढ़ाती है।",
-    mr: "जास्त आर्द्रतेमुळे बुरशीजन्य आजारांचा धोका वाढतो."
+    te: "అధిక తేమ వల్ల శిలీంధ్ర (ఫంగల్) తెగుళ్ల ప్రమాదం పెరుగుతుంది."
   },
   humidity_optimal: {
     en: "Humidity is within the acceptable range.",
     hi: "आर्द्रता स्वीकार्य है।",
-    mr: "आर्द्रता योग्य मर्यादेत आहे."
+    te: "తేమ శాతం అనుకూల పరిధిలోనే ఉంది."
   },
   season_optimal: {
     en: "The current season is highly suitable.",
     hi: "वर्तमान मौसम उपयुक्त है।",
-    mr: "सध्याचा हंगाम अनुकूल आहे."
+    te: "ప్రస్తుత రుతువు ఈ పంటకు ఎంతో అనుకూలమైనది."
   },
   season_suboptimal: {
     en: "The selected season is not ideal for this crop.",
     hi: "चयनित मौसम आदर्श नहीं है।",
-    mr: "निवडलेला हंगाम योग्य नाही."
+    te: "ఎంచుకున్న రుతువు ఈ పంట సాగుకు అంత అనుకూలం కాదు."
   },
   season_unknown: {
     en: "No strong season preference data available.",
     hi: "कोई मौसम डेटा उपलब्ध नहीं है।",
-    mr: "हंगामाच्या पसंतीचा कोणताही डेटा उपलब्ध नाही."
+    te: "రుతువు ప్రాధాన్యత డేటా అందుబాటులో లేదు."
   },
   year_trend_optimal: {
     en: "Recent year benefits from modern cultivar adoption.",
     hi: "आधुनिक खेती अपनाने से लाभ।",
-    mr: "आधुनिक लागवड पद्धतींचा फायदा."
+    te: "ఆధునిక సాగు పద్ధతులు మరియు మెరుగైన విత్తనాల వల్ల మేలు జరుగుతుంది."
   },
   year_trend_neutral: {
     en: "Moderate technology adoption expected.",
     hi: "मध्यम तकनीक अपनाने की उम्मीद है।",
-    mr: "मध्यम तंत्रज्ञानाचा वापर अपेक्षित आहे."
+    te: "సాధారణ సాంకేతిక సాగు పద్ధతులు అంచనా వేయబడ్డాయి."
   },
 
   // Alert Keys
   LOW_RAINFALL: {
     en: "Low rainfall detected. Drought risk elevated.",
     hi: "कम वर्षा। सूखे का जोखिम बढ़ा।",
-    mr: "कमी पाऊस. दुष्काळाचा धोका."
+    te: "తక్కువ వర్షపాతం. కరువు ముప్పు పెరిగింది."
   },
   SEVERE_DROUGHT_RISK: {
     en: "Severe drought risk. Immediate irrigation required.",
     hi: "गंभीर सूखे का जोखिम। तत्काल सिंचाई आवश्यक है।",
-    mr: "तीव्र दुष्काळाचा धोका. तातडीने सिंचन आवश्यक."
+    te: "తీవ్రమైన కరువు ముప్పు. వెంటనే నీటి పారుదల అందించాలి."
   },
   HIGH_HEAT_STRESS: {
     en: "Extreme heat warning. Yield reduction possible.",
     hi: "अत्यधिक गर्मी की चेतावनी। उपज में कमी संभव है।",
-    mr: "अति उष्णतेचा इशारा. उत्पादनात घट शक्य."
+    te: "తీవ్రమైన ఎండ హెచ్చరిక. దిగుబడి తగ్గే అవకాశం ఉంది."
   },
   MILD_HEAT_STRESS: {
     en: "Mild heat stress. Use mulching if possible.",
     hi: "हल्की गर्मी का तनाव।",
-    mr: "सौम्य उष्णतेचा ताण."
+    te: "తేలికపాటి వేడి ఒత్తిడి. మల్చింగ్ చేయడం మంచిది."
   },
   FROST_WARNING: {
     en: "Frost warning. Cold stress likely.",
     hi: "पाले की चेतावनी। ठंड का तनाव संभव है।",
-    mr: "दव पडण्याची चेतावणी. थंडीचा ताण येण्याची शक्यता."
+    te: "మంచు హెచ్చరిక. చలి ప్రభావం పడే అవకాశం ఉంది."
   },
   HIGH_DISEASE_RISK: {
     en: "High humidity indicates possible fungal disease.",
     hi: "उच्च आर्द्रता से फंगल बीमारी की संभावना।",
-    mr: "जास्त आर्द्रतेमुळे बुरशीजन्य आजाराची शक्यता."
+    te: "అధిక తేమ వల్ల ఫంగల్ తెగుళ్లు సోకే అవకాశం ఉంది."
   },
   ELEVATED_DISEASE_RISK: {
     en: "Elevated disease risk detected.",
     hi: "बढ़ी हुई बीमारी का जोखिम।",
-    mr: "रोगाचा धोका वाढला आहे."
+    te: "తెగుళ్ల ముప్పు పెరిగినట్లు గుర్తించబడింది."
   },
   WATERLOGGING_WARNING: {
     en: "Waterlogging risk. Improve drainage.",
     hi: "जलभराव का जोखिम। जल निकासी में सुधार करें।",
-    mr: "पाणी साचण्याचा धोका. निचरा सुधारा."
+    te: "నీరు నిలిచిపోయే ముప్పు. డ్రైనేజీ సదుపాయాన్ని మెరుగుపరచండి."
   },
   YIELD_BELOW_REGIONAL_AVERAGE: {
     en: "Predicted yield is below the regional average.",
     hi: "तुलनात्मक उपज क्षेत्रीय औसत से कम है।",
-    mr: "अपेक्षित उत्पादन प्रादेशिक सरासरीपेक्षा कमी आहे."
+    te: "అంచనా వేసిన దిగుబడి ప్రాంతీయ సగటు కంటే తక్కువగా ఉంది."
   },
   HIGH_PRODUCTION_RISK: {
     en: "High production risk. Consider immediate mitigations.",
     hi: "उच्च उत्पादन जोखिम। तत्काल शमन पर विचार करें।",
-    mr: "उच्च उत्पादन जोखीम. तातडीच्या उपाययोजना करा."
+    te: "అధిక ఉత్పత్తి ప్రమాదం. వెంటనే నివారణ చర్యలు చేపట్టండి."
   },
   YIELD_ABOVE_REGIONAL_AVERAGE: {
     en: "Yield is tracking above regional averages.",
     hi: "उपज क्षेत्रीय औसत से ऊपर है।",
-    mr: "उत्पादन प्रादेशिक सरासरीच्या वर आहे."
+    te: "దిగుబడి ప్రాంతీయ సగటు కంటే ఎక్కువగా నమోదైంది."
   }
 };
 

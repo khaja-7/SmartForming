@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const LANGUAGES = [
   { code: "en", label: "English",  native: "EN" },
   { code: "hi", label: "हिंदी",   native: "HI" },
-  { code: "mr", label: "मराठी",   native: "MR" },
+  { code: "te", label: "తెలుగు",   native: "TE" },
 ];
 
 const LanguageSwitcher = () => {
